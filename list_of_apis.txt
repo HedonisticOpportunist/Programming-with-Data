@@ -1,0 +1,4 @@
+* https://remotive.io/api-documentation
+* https://api.producthunt.com/v1/docs
+* https://weworkremotely.com/api-terms-and-guidelines
+* https://remoteok.io/api
