@@ -55,7 +55,7 @@ def find_jobs_by_header_title(scraped_data: BeautifulSoup) -> List:
     """
     Finds jobs by header title
     :param scraped_data:
-    :param scraped_data: the data to be scraped
+    :param scraped_data: the data to be retrieved
     :return: a list of job titles
     """
     jobs = []
