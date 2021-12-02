@@ -5,7 +5,9 @@ import pandas as pd
 import requests
 from typing import List
 
+# global variables
 PAGE_COUNT_ITR = 150
+HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0"}
 
 
 def retrieve_pages_as_text() -> List:
@@ -22,21 +24,28 @@ def retrieve_pages_as_text() -> List:
     return data_list
 
 
-def retrieve_job_summaries_as_soup(headers: dict) -> List:
+def extract_job_descriptions() -> List:
     """
-    Retrieve job summary from multiple pages
-    :param headers
+    @Credit for this piece of code goes to:
+    https://stackoverflow.com/questions/67504953/how-to-get-full-job-descriptions-from-indeed-using-python-and-beautifulsoup
+    Any modifications are mine and mine alone
+
+    Retrieve job summaries  from multiple pages
     :return: a list of job descriptions
     """
-    data_list = []
+    job_summaries = []
+    api_url = "https://uk.indeed.com/viewjob?viewtype=embedded&jk={job_id}"
+    url = "https://uk.indeed.com/jobs?q=Remote%20QA"
+    scraped_data = BeautifulSoup(requests.get(url, headers=HEADERS).content, "html.parser")
 
-    page_count = 0
-    while page_count <= PAGE_COUNT_ITR:
-        url = f'https://uk.indeed.com/jobs?q=Remote%20QA&sort=date&start={page_count}'
-        scraped_data = BeautifulSoup(requests.get(url, headers=headers).content, "html.parser")
-        data_list.append(scraped_data)
-        page_count += 10
-    return data_list
+    for job in scraped_data.select('a[id^="job_"]'):
+        job_id = job["id"].split("_")[-1]
+        scraped_job_data = BeautifulSoup(requests.get(api_url.format(job_id=job_id),
+                                                      headers=HEADERS).content, "html.parser")
+        job_description = scraped_job_data.select_one("#jobDescriptionText").get_text(strip=True)
+        job_summaries.append(job_description)
+
+    return job_summaries
 
 
 def retrieve_data_as_text(url: str) -> str:
@@ -45,7 +54,7 @@ def retrieve_data_as_text(url: str) -> str:
     :param url:
     :return: data in form of a text
     """
-    return requests.get(url).text
+    return requests.get(url, HEADERS).text
 
 
 def parse_data_into_html(url: str) -> BeautifulSoup:
@@ -95,30 +104,6 @@ def save_jobs_as_txt(jobs: List):
     """
     with open('job_titles.txt', 'w') as f:
         f.write("\n".join(str(job) for job in jobs))
-
-
-def extract_job_descriptions() -> List:
-    """
-    @Credit for this piece of code goes to:
-    https://stackoverflow.com/questions/67504953/how-to-get-full-job-descriptions-from-indeed-using-python-and-beautifulsoup
-    Any modifications are mine and mine alone
-
-    Returns descriptions from a selected count of jobs on Indeed
-    :return: a list containing job descriptions
-    """
-    headers = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0"}
-    job_summaries = retrieve_job_summaries_as_soup(headers)
-    api_url = "https://uk.indeed.com/viewjob?viewtype=embedded&jk={job_id}"
-
-    for job_summary in job_summaries:
-        for job in job_summary.select('a[id^="job_"]'):
-            job_id = job["id"].split("_")[-1]
-            scraped_job_data = BeautifulSoup(requests.get(api_url.format(job_id=job_id),
-                                                          headers=headers).content, "html.parser")
-            job_description = scraped_job_data.select_one("#jobDescriptionText").get_text(strip=True)
-            job_summaries.append(job_description)
-
-    return job_summaries
 
 
 # noinspection PyTypeChecker
