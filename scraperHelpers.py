@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # !python
 from bs4 import BeautifulSoup
+import pandas as pd
 import requests
 from typing import List
 
@@ -12,7 +13,7 @@ def retrieve_pages_as_text() -> List:
     """
     data_list = []
     page_count = 0
-    while page_count <= 50:
+    while page_count <= 100:
         url = f'https://uk.indeed.com/jobs?q=Remote%20QA&sort=date&start={page_count}'
         data_list.append(retrieve_data_as_text(url))
         page_count += 10
@@ -76,3 +77,39 @@ def save_jobs_as_txt(jobs: List):
     """
     with open('jobtitles.txt', 'w') as f:
         f.write("\n".join(str(job) for job in jobs))
+
+
+def extract_job_descriptions() -> List:
+    """
+    @Credit for this piece of code goes to:
+    https://stackoverflow.com/questions/67504953/how-to-get-full-job-descriptions-from-indeed-using-python-and-beautifulsoup
+    Any modifications are mine and mine alone
+
+    Returns descriptions from a selected count of jobs on Indeed
+    :return: a list containing job descriptions
+    """
+    headers = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0"}
+    url = "https://uk.indeed.com/Remote-QA-jobs"
+    api_url = "https://uk.indeed.com/viewjob?viewtype=embedded&jk={job_id}"
+    scraped_data = BeautifulSoup(requests.get(url, headers=headers).content, "html.parser")
+
+    job_summaries = []
+
+    for job in scraped_data.select('a[id^="job_"]'):
+        job_id = job["id"].split("_")[-1]
+        scraped_job_data = BeautifulSoup(requests.get(api_url.format(job_id=job_id),
+                                                      headers=headers).content, "html.parser")
+        job_description = scraped_job_data.select_one("#jobDescriptionText").get_text(strip=True)
+        job_summaries.append(job_description)
+
+    return job_summaries
+
+
+def save_summaries_as_csv(job_descriptions_list: List):
+    data_frame = pd.DataFrame(job_descriptions_list)
+    data_frame.to_csv("job_descriptions.csv")
+
+
+def save_titles_as_csv(job_titles: List):
+    data_frame = pd.DataFrame(job_titles)
+    data_frame.to_csv("job_titles.csv")
