@@ -6,7 +6,7 @@ import requests
 from typing import List
 
 # global variables
-PAGE_COUNT_ITR = 250;
+PAGE_COUNT_ITR = 250
 HEADERS = {"User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0"}
 
 
