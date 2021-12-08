@@ -1,5 +1,5 @@
-#!/usr/bin/python
-# !python
+# #!/usr/bin/python
+# # !python
 from bs4 import BeautifulSoup
 import pandas as pd
 import requests
@@ -46,6 +46,22 @@ def extract_job_descriptions() -> List:
         job_summaries.append(job_description)
 
     return job_summaries
+
+
+def find_jobs_by_summary(scraped_data: BeautifulSoup) -> List:
+    """
+    Finds jobs by the summary
+    :param scraped_data:
+    :param scraped_data: the data to be retrieved
+    :return: a list of job summaries
+    """
+    jobs = []
+    # code credit for text splitting:
+    # @ https://www.geeksforgeeks.org/scraping-indeed-job-data-using-python
+    for item in scraped_data.find_all("div", class_="job-snippet"):
+        data_str = "" + item.get_text()
+        jobs.append(data_str.split("\n"))
+    return jobs
 
 
 def retrieve_data_as_text(url: str) -> str:
