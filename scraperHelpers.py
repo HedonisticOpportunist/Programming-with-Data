@@ -123,13 +123,13 @@ def save_jobs_as_txt(jobs: List):
 
 
 # noinspection PyTypeChecker
-def save_summaries_as_csv(extracted_job_titles: List):
+def save_summaries_as_csv(extracted_job_summaries: List):
     """
     Save the job summaries into a csv file
-    :param extracted_job_titles:
+    :param extracted_job_summaries:
     :return: a csv file containing job summaries
     """
-    data_frame = pd.DataFrame(extracted_job_titles)
+    data_frame = pd.DataFrame(extracted_job_summaries)
     data_frame.to_csv("job_descriptions.csv")
 
 
